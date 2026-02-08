@@ -507,17 +507,18 @@
 
     /* ===== Mobile Landscape ===== */
     @media (max-height: 500px) and (orientation: landscape) {
-      .app { padding: 0.5vh 1.2vw 0.5vh; overflow: hidden; }
+      html, body { overflow-y: auto; }
+      .app { padding: 0.5vh 1.2vw 0.5vh; overflow: visible; min-height: 100vh; height: auto; }
       .header { padding: 0.3vh 0; }
       .header h1 { font-size: calc(2.4vh * var(--font-scale)); line-height: 1.1; }
       .header-actions .btn-icon { width: 5vh; height: 5vh; font-size: 2.5vh; border-radius: 1vh; }
 
       .main-layout {
         grid-template-columns: minmax(0, 22vw) minmax(0, 1fr) minmax(0, 20vw);
-        gap: 0.8vw; padding: 0; overflow: hidden; width: 100%;
+        gap: 0.8vw; padding: 0; overflow: visible; width: 100%;
       }
 
-      .left-panel { gap: 0.5vh; overflow: hidden; min-width: 0; }
+      .left-panel { gap: 0.5vh; overflow: visible; min-width: 0; }
       .pick-section { padding: 0; gap: 0.5vh; }
       .picked-number-display {
         width: min(calc(12vh * var(--font-scale)), 18vw); height: min(calc(12vh * var(--font-scale)), 18vw);
@@ -542,16 +543,16 @@
       .winner-btn .winner-name { font-size: calc(1.3vh * var(--font-scale)); }
       .winner-btn .undo-icon { font-size: calc(1.5vh * var(--font-scale)); }
 
-      .center-panel { min-height: 0; overflow: hidden; }
-      .grid-container { padding: 0.5vh; border-radius: 1vh; min-height: 0; overflow: hidden; flex: 1; }
-      .grid { gap: 0.3vh; grid-template-rows: repeat(9, minmax(0, 1fr)); }
+      .center-panel { min-height: 0; overflow: visible; }
+      .grid-container { padding: 0.5vh; border-radius: 1vh; min-height: 0; overflow: visible; flex: 1; }
+      .grid { gap: 0.3vh; grid-template-rows: repeat(9, minmax(3vh, 1fr)); }
       .grid-cell {
         font-size: calc(2vh * var(--font-scale));
         border-radius: 0.6vh;
         padding: 0; overflow: hidden;
       }
 
-      .right-panel { gap: 0.5vh; overflow: hidden; min-width: 0; }
+      .right-panel { gap: 0.5vh; overflow: visible; min-width: 0; }
       .history-section { padding: 1vh; border-radius: 1vh; }
       .history-header { margin-bottom: 0.5vh; }
       .history-header h3 { font-size: calc(1.5vh * var(--font-scale)); }
@@ -561,12 +562,13 @@
       }
       .history-list { gap: 0.5vh; }
       #verifyOverlay .popover {
-        top: 1vh !important; left: 3vw !important;
-        width: 94vw; min-width: 0; max-width: 94vw;
-        max-height: 98vh; resize: none; overflow-y: auto;
+        position: fixed !important;
+        top: 1vh !important; left: 2vw !important;
+        width: 96vw !important; min-width: 0 !important; max-width: 96vw !important;
+        max-height: 98vh; resize: none !important; overflow-y: auto;
         padding: 1.2vh 2vw;
       }
-      #verifyOverlay .popover h2 { font-size: calc(2.2vh * var(--font-scale)); margin-bottom: 0.5vh; }
+      #verifyOverlay .popover h2 { font-size: calc(2.2vh * var(--font-scale)); margin-bottom: 0.5vh; cursor: default !important; }
       .verify-input-wrapper { margin-bottom: 0.8vh; }
       .verify-input { padding: 0.6vh 1vw; font-size: calc(1.6vh * var(--font-scale)); }
       .verify-cell { font-size: calc(1.8vh * var(--font-scale)); padding: 0.3vh 0; min-height: 2.8vh; border-radius: 4px; }
@@ -675,11 +677,15 @@
       .theme-btn { font-size: 0.68rem; padding: 6px 3px; }
       .font-size-selector { flex-wrap: wrap; }
       .confirm-dialog, .winner-dialog { max-width: 92%; padding: 20px; }
+      /* Verify ticket: simple centered overlay on mobile portrait */
       #verifyOverlay .popover {
-        top: 2% !important; left: 2% !important;
-        width: 96%; min-width: 0; max-width: 96%;
-        max-height: 94vh; resize: none; overflow-y: auto;
+        position: relative !important;
+        top: auto !important; left: auto !important;
+        width: 96% !important; min-width: 0 !important; max-width: 96% !important;
+        max-height: 90vh; resize: none !important; overflow-y: auto;
+        margin: auto;
       }
+      #verifyOverlay .popover h2 { cursor: default !important; }
       .verify-cell { font-size: calc(0.82rem * var(--font-scale)); padding: 5px 1px; min-height: 28px; border-radius: 5px; }
       .verify-ticket-card { padding: 12px; }
       .verify-ticket-grid { gap: 3px; }
@@ -704,9 +710,13 @@
       .grid-cell { font-size: calc(0.7rem * var(--font-scale)); border-radius: 4px; }
       .grid { gap: 1.5px; }
       #verifyOverlay .popover {
-        top: 1% !important; left: 1% !important;
-        width: 98%; max-width: 98%;
+        position: relative !important;
+        top: auto !important; left: auto !important;
+        width: 98% !important; max-width: 98% !important;
+        min-width: 0 !important; resize: none !important;
+        margin: auto;
       }
+      #verifyOverlay .popover h2 { cursor: default !important; }
       .verify-cell { font-size: calc(0.7rem * var(--font-scale)); padding: 3px 0; min-height: 24px; border-radius: 4px; }
       .verify-ticket-card { padding: 8px; }
       .verify-ticket-grid { gap: 2px; }
@@ -1763,20 +1773,46 @@
       }
     });
 
-    // ===== Fullscreen =====
+    // ===== Fullscreen (with iOS Safari fallback) =====
     const fullscreenBtn = $('fullscreenBtn');
+    function isFullscreen() {
+      return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+    }
     function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
+      if (!isFullscreen()) {
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+          el.requestFullscreen().catch(() => {});
+        } else if (el.webkitRequestFullscreen) {
+          el.webkitRequestFullscreen();
+        } else if (el.mozRequestFullScreen) {
+          el.mozRequestFullScreen();
+        } else if (el.msRequestFullscreen) {
+          el.msRequestFullscreen();
+        } else {
+          // iOS Safari: no real fullscreen API — use minimal-ui workaround
+          window.scrollTo(0, 1);
+        }
       } else {
-        document.exitFullscreen().catch(() => {});
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
       }
     }
     fullscreenBtn.addEventListener('click', toggleFullscreen);
-    document.addEventListener('fullscreenchange', () => {
-      fullscreenBtn.textContent = document.fullscreenElement ? '⛶' : '⛶';
-      fullscreenBtn.title = document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen';
-    });
+    function onFullscreenChange() {
+      fullscreenBtn.textContent = isFullscreen() ? '⛶' : '⛶';
+      fullscreenBtn.title = isFullscreen() ? 'Exit Fullscreen' : 'Fullscreen';
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    document.addEventListener('mozfullscreenchange', onFullscreenChange);
 
     // ===== Verify Ticket =====
     let verifyTickets = [];
