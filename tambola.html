@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tambola Draw</title>
+  <title>Tambola Draw | online-gamezone.com</title>
   <style>
     :root { --transition-speed: 0.25s; --font-scale: 1; }
 
@@ -848,7 +848,7 @@
   <div class="app">
     <header class="header">
       <a href="https://online-gamezone.com" style="text-decoration:none;display:flex;align-items:center;" title="online-gamezone.com"><svg width="120" height="28" viewBox="0 0 120 28" fill="none"><rect width="28" height="28" rx="7" fill="#6c5ce7"/><path d="M7 11h14M7 14h14M7 17h14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="11" r="1.5" fill="#fdcb6e"/><circle cx="18" cy="14" r="1.5" fill="#00b894"/><circle cx="13" cy="17" r="1.5" fill="#e17055"/><text x="33" y="12" fill="#b0b0c8" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="8.5" font-weight="700">online-</text><text x="33" y="24" fill="#6c5ce7" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="10.5" font-weight="800">gamezone</text></svg></a>
-      <h1 id="appTitle">🎱 Tambola Draw</h1>
+      <h1 id="appTitle">🎱 Tambola Draw | online-gamezone.com</h1>
       <div class="header-actions">
         <button class="btn btn-icon" id="fullscreenBtn" title="Toggle fullscreen mode">⛶</button>
         <button class="btn btn-icon" id="verifyTicketBtn" title="Verify a ticket – check which numbers are matched">🎫</button>
@@ -924,7 +924,7 @@
 
       <div class="setting-group">
         <label>Title</label>
-        <input type="text" class="delay-input" id="titleInput" style="width:100%;text-align:left;" value="🎱 Tambola Draw" />
+        <input type="text" class="delay-input" id="titleInput" style="width:100%;text-align:left;" value="🎱 Tambola Draw | online-gamezone.com" />
       </div>
 
       <div class="setting-group">
@@ -1055,7 +1055,7 @@
       <h2>🎱 Game Setup <button class="close-btn" id="closeSetup">&times;</button></h2>
       <div class="setting-group">
         <label>Game Title</label>
-        <input type="text" class="delay-input" id="setupTitleInput" style="width:100%;text-align:left;" value="🎱 Tambola Draw" />
+        <input type="text" class="delay-input" id="setupTitleInput" style="width:100%;text-align:left;" value="🎱 Tambola Draw | online-gamezone.com" />
       </div>
       <div class="setting-group">
         <label>Prizes</label>
@@ -1092,7 +1092,7 @@
     let settings = {
       theme: 'dark', announce: false, announcementSpeed: 1,
       historyCount: 90, autoDelay: 30, fontScale: 1.5,
-      title: '🎱 Tambola Draw',
+      title: '🎱 Tambola Draw | online-gamezone.com',
       prizes: JSON.parse(JSON.stringify(DEFAULT_PRIZES)),
     };
 
@@ -1492,7 +1492,7 @@
             }
           }
           if (!settings.fontScale) settings.fontScale = 1.5;
-          if (!settings.title) settings.title = '🎱 Tambola Draw';
+          if (!settings.title) settings.title = '🎱 Tambola Draw | online-gamezone.com';
         }
       } catch(e) {}
     }
@@ -1675,7 +1675,7 @@
     });
 
     $('titleInput').addEventListener('input', () => {
-      settings.title = $('titleInput').value || '🎱 Tambola Draw';
+      settings.title = $('titleInput').value || '🎱 Tambola Draw | online-gamezone.com';
       $('appTitle').textContent = settings.title;
       saveSettings();
     });
@@ -2119,7 +2119,7 @@
     }
 
     function closeSetup() {
-      settings.title = setupTitleInput.value || '🎱 Tambola Draw';
+      settings.title = setupTitleInput.value || '🎱 Tambola Draw | online-gamezone.com';
       $('appTitle').textContent = settings.title;
       $('titleInput').value = settings.title;
       saveSettings();
@@ -2174,7 +2174,7 @@
     }
 
     setupTitleInput.addEventListener('input', () => {
-      settings.title = setupTitleInput.value || '🎱 Tambola Draw';
+      settings.title = setupTitleInput.value || '🎱 Tambola Draw | online-gamezone.com';
       $('appTitle').textContent = settings.title;
       updatePrinterLink();
     });
