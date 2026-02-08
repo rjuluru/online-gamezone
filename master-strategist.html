@@ -1,0 +1,1807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Master Strategist — Online GameZone</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117;
+    --bg-card: #1a1d27;
+    --bg-cell: #252836;
+    --bg-cell-hover: #2e3245;
+    --text: #e8e8f0;
+    --text-dim: #8b8da3;
+    --accent: #6c5ce7;
+    --accent-hover: #5a4bd6;
+    --success: #00b894;
+    --danger: #e17055;
+    --border: #2d3040;
+    --shadow: 0 4px 24px rgba(0,0,0,0.3);
+    --radius: 12px;
+  }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    background: var(--bg-card);
+    padding: 10px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .header h1 { font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
+  .header-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { opacity: 0.9; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { background: var(--bg-cell); }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { opacity: 0.9; }
+  .btn-success:disabled {
+    background: var(--bg-cell);
+    color: var(--text-dim);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .timer-display {
+    font-family: monospace;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--bg-cell);
+    padding: 6px 12px;
+    border-radius: 8px;
+  }
+  .check-count {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-dim);
+  }
+
+  /* ===== Setup Screen ===== */
+  .setup-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 56px);
+    padding: 20px;
+  }
+  .setup-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 460px;
+    width: 100%;
+    box-shadow: var(--shadow);
+  }
+  .setup-card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .setup-card .subtitle {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .setup-group {
+    margin-bottom: 20px;
+  }
+  .setup-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .slider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .slider-row input[type="range"] {
+    flex: 1;
+    accent-color: var(--accent);
+    height: 6px;
+  }
+  .slider-val {
+    font-size: 1.3rem;
+    font-weight: 800;
+    min-width: 32px;
+    text-align: center;
+    color: var(--accent);
+  }
+  .setup-start {
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .setup-start:hover { background: var(--accent-hover); }
+  .setup-preview {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .preview-item {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .preview-item strong {
+    color: var(--accent);
+    font-size: 1rem;
+  }
+
+  /* ===== Game Screen ===== */
+  .game-screen {
+    display: none;
+    padding: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Color palette */
+  .palette-section {
+    margin-bottom: 20px;
+  }
+  .palette-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .palette {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+  }
+  .palette-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+  }
+  .color-orb {
+    width: var(--orb-size, 46px);
+    height: var(--orb-size, 46px);
+    border-radius: 50%;
+    cursor: pointer;
+    border: 3px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .color-orb:hover { transform: scale(1.12); }
+  .color-orb.used {
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .color-orb.eliminated {
+    opacity: 0.2;
+    filter: grayscale(1);
+    pointer-events: none;
+    text-decoration: line-through;
+  }
+  .color-orb.confirmed {
+    border-color: #fff;
+    box-shadow: 0 0 0 3px var(--success), 0 0 12px rgba(0,184,148,0.5);
+    animation: confirmPulse 2s ease-in-out infinite;
+  }
+  @keyframes confirmPulse {
+    0%, 100% { box-shadow: 0 0 0 3px var(--success), 0 0 12px rgba(0,184,148,0.5); }
+    50% { box-shadow: 0 0 0 3px var(--success), 0 0 20px rgba(0,184,148,0.7); }
+  }
+  .orb-icon { font-size: var(--orb-icon-size, 1.05rem); pointer-events: none; }
+  .orb-actions {
+    display: flex;
+    gap: 2px;
+  }
+  .orb-action-btn {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.55rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    background: var(--bg-cell);
+    color: var(--text-dim);
+  }
+  .orb-action-btn:hover { background: var(--bg-cell-hover); }
+  .orb-action-btn.elim-active { background: var(--danger); color: #fff; }
+  .orb-action-btn.confirm-active { background: var(--success); color: #fff; }
+
+  /* Slots */
+  .slots-section {
+    margin-bottom: 20px;
+  }
+  .slots-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+  .slots-row {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .slot-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .slot {
+    width: var(--slot-size, 52px);
+    height: var(--slot-size, 52px);
+    border-radius: 50%;
+    border: 3px dashed var(--border);
+    background: var(--bg-cell);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-dim);
+    position: relative;
+  }
+  .slot:hover { border-color: var(--accent); }
+  .slot.filled {
+    border-style: solid;
+    border-color: rgba(255,255,255,0.2);
+  }
+  .slot.filled:hover {
+    border-color: var(--danger);
+  }
+  .slot.confirmed {
+    border-color: #fff !important;
+    box-shadow: 0 0 0 3px var(--success), 0 0 10px rgba(0,184,148,0.4);
+  }
+  .slot-confirm-badge {
+    position: absolute;
+    top: -4px; right: -4px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--success);
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg);
+    cursor: pointer;
+    z-index: 2;
+    transition: transform 0.15s;
+  }
+  .slot-confirm-badge:hover { transform: scale(1.2); }
+  .slot.locked {
+    border-color: #fff !important;
+    box-shadow: 0 0 0 3px #fdcb6e, 0 0 8px rgba(253,203,110,0.3);
+  }
+  .slot.locked:hover { border-color: #fff !important; }
+  .slot.help-locked {
+    border-color: #fff !important;
+    box-shadow: 0 0 0 3px var(--accent), 0 0 10px rgba(108,92,231,0.5);
+  }
+  .slot.help-locked:hover { border-color: #fff !important; cursor: default; }
+  .slot.help-target {
+    animation: helpPulse 0.8s ease-in-out infinite;
+  }
+  @keyframes helpPulse {
+    0%, 100% { border-color: var(--accent); box-shadow: 0 0 6px rgba(108,92,231,0.3); }
+    50% { border-color: #a29bfe; box-shadow: 0 0 16px rgba(108,92,231,0.6); }
+  }
+  .slot-icon { font-size: var(--slot-icon-size, 1.2rem); pointer-events: none; }
+  .lock-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 0.7rem; padding: 2px;
+    opacity: 0.5; transition: opacity 0.2s;
+  }
+  .lock-btn:hover { opacity: 1; }
+  .lock-btn.active { opacity: 1; }
+
+  /* Guess history */
+  .history-section {
+    margin-bottom: 20px;
+  }
+  .history-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .history-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    animation: histSlideIn 0.35s ease-out both;
+  }
+  .history-row.latest {
+    padding: 10px 14px;
+    border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(108,92,231,0.2);
+    flex-wrap: wrap;
+  }
+  .history-row.latest .history-dot {
+    width: calc(var(--hdot-size, 28px) + 4px);
+    height: calc(var(--hdot-size, 28px) + 4px);
+  }
+  .history-row.latest .hdot-icon { font-size: 0.85rem; }
+  .history-row.latest .history-num { font-size: 0.85rem; color: var(--accent); }
+  .history-row.latest .history-feedback {
+    width: 100%;
+    justify-content: center;
+    padding-top: 4px;
+    border-top: 1px solid rgba(108,92,231,0.15);
+    margin-top: 2px;
+  }
+  @keyframes histSlideIn {
+    0% { opacity: 0; transform: translateY(-18px); }
+    100% { opacity: 1; transform: translateY(0); }
+  }
+  .history-num {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: var(--text-dim);
+    min-width: 24px;
+  }
+  .history-colors {
+    display: flex;
+    gap: 6px;
+    flex: 1;
+  }
+  .history-dot {
+    width: var(--hdot-size, 28px);
+    height: var(--hdot-size, 28px);
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .history-dot.h-confirmed {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px var(--success), 0 0 6px rgba(0,184,148,0.3);
+  }
+  .hdot-icon { font-size: 0.7rem; pointer-events: none; }
+  .history-feedback {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .fb-badge {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 800;
+  }
+  .fb-correct {
+    background: rgba(0,184,148,0.15);
+    color: var(--success);
+  }
+  .fb-misplaced {
+    background: rgba(253,203,110,0.15);
+    color: #fdcb6e;
+  }
+  .fb-total {
+    background: rgba(108,92,231,0.2);
+    color: var(--accent);
+  }
+  .fb-time {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    font-family: monospace;
+  }
+
+  /* Feedback text */
+  .feedback-text {
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 10px 16px;
+    background: var(--bg-card);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* Help mode indicator */
+  .help-counter {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .btn-help {
+    background: var(--accent);
+    color: #fff;
+    position: relative;
+  }
+  .btn-help.active {
+    background: #a29bfe;
+    animation: helpBtnPulse 1s ease-in-out infinite;
+  }
+  @keyframes helpBtnPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(108,92,231,0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(108,92,231,0); }
+  }
+
+  /* Actions */
+  .game-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* ===== Win Overlay ===== */
+  .win-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .win-overlay.open { display: flex; }
+  .win-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    position: relative;
+    z-index: 1001;
+  }
+  .win-card h2 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+  }
+  .win-card .win-subtitle {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+  .win-stats {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .win-stat {
+    background: var(--bg-cell);
+    padding: 14px 20px;
+    border-radius: 10px;
+    flex: 1;
+  }
+  .win-stat .stat-val {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--accent);
+  }
+  .win-stat .stat-label {
+    font-size: 0.72rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+  .win-secret {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .win-secret-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Reveal Overlay */
+  .reveal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .reveal-overlay.open { display: flex; }
+  .reveal-card {
+    background: linear-gradient(135deg, #1a1d27 0%, #2d2040 100%);
+    border-radius: var(--radius);
+    padding: 36px 32px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 8px 48px rgba(108,92,231,0.3), 0 0 0 1px var(--border);
+    position: relative;
+    z-index: 1001;
+  }
+  .reveal-card h2 {
+    font-size: 1.6rem;
+    margin-bottom: 6px;
+    color: var(--danger);
+  }
+  .reveal-card .reveal-subtitle {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+  }
+  .reveal-card .reveal-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .reveal-secret {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .reveal-dot {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    animation: revealPop 0.4s ease-out both;
+  }
+  .reveal-dot:nth-child(1) { animation-delay: 0.1s; }
+  .reveal-dot:nth-child(2) { animation-delay: 0.25s; }
+  .reveal-dot:nth-child(3) { animation-delay: 0.4s; }
+  .reveal-dot:nth-child(4) { animation-delay: 0.55s; }
+  .reveal-dot:nth-child(5) { animation-delay: 0.7s; }
+  .reveal-dot:nth-child(6) { animation-delay: 0.85s; }
+  .reveal-dot:nth-child(7) { animation-delay: 1.0s; }
+  .reveal-dot:nth-child(8) { animation-delay: 1.15s; }
+  .reveal-dot:nth-child(9) { animation-delay: 1.3s; }
+  @keyframes revealPop {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.2); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .reveal-stats {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .reveal-stats .win-stat { flex: 1; }
+
+  /* How to Play overlay */
+  .htp-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .htp-overlay.open { display: flex; }
+  .htp-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    position: relative;
+    z-index: 1001;
+  }
+  .htp-card h2 {
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .htp-section {
+    margin-bottom: 14px;
+  }
+  .htp-section h3 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .htp-section p, .htp-section li {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .htp-section ul {
+    list-style: none;
+    padding: 0;
+  }
+  .htp-section li {
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+  .htp-section li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+  .htp-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .htp-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    background: var(--bg-cell);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .htp-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .htp-close {
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  /* Confetti canvas */
+  #confettiCanvas {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    pointer-events: none;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 480px) {
+    /* Header */
+    .header { padding: 8px 10px; gap: 4px; }
+    .header-left { gap: 6px; flex-shrink: 1; overflow: hidden; }
+    .header-left a { flex-shrink: 0; }
+    .header-left a svg { width: 24px; height: 24px; }
+    .header h1 { font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; }
+    .header-actions { gap: 3px; justify-content: flex-end; }
+    .header-actions .btn { padding: 4px 7px; font-size: 0.64rem; }
+    .header-actions .timer-display { font-size: 0.68rem; padding: 3px 6px; }
+    .header-actions .check-count,
+    .header-actions .help-counter { font-size: 0.58rem; }
+
+    /* How to play mobile */
+    .htp-card { padding: 20px 16px; }
+    .htp-card h2 { font-size: 1.1rem; }
+    .htp-section h3 { font-size: 0.78rem; }
+    .htp-section p, .htp-section li { font-size: 0.76rem; }
+    .htp-legend-item { font-size: 0.72rem; padding: 3px 8px; }
+
+    /* Setup */
+    .setup-screen { padding: 12px; min-height: calc(100vh - 50px); }
+    .setup-card { padding: 20px 16px; margin: 0; }
+    .setup-card h2 { font-size: 1.1rem; margin-bottom: 4px; }
+    .setup-card .subtitle { font-size: 0.78rem; margin-bottom: 18px; }
+    .setup-group { margin-bottom: 16px; }
+    .setup-group label { font-size: 0.75rem; margin-bottom: 6px; }
+    .slider-val { font-size: 1.1rem; }
+    .setup-preview { gap: 8px; }
+    .preview-item { font-size: 0.78rem; }
+    .preview-item strong { font-size: 0.9rem; }
+    .setup-start { padding: 14px; font-size: 1rem; }
+
+    /* Game */
+    .game-screen { padding: 8px; }
+    .palette { padding: 8px; gap: 4px; }
+    .palette-item { gap: 2px; }
+    .orb-action-btn { width: 16px; height: 16px; font-size: 0.45rem; }
+    .slots-row { gap: 8px; }
+    .slot-confirm-badge { width: 15px; height: 15px; font-size: 0.5rem; top: -3px; right: -3px; }
+    .game-actions { gap: 6px; }
+    .game-actions .btn { padding: 6px 10px; font-size: 0.72rem; }
+
+    /* History */
+    .history-list { max-height: 240px; }
+    .history-row { padding: 6px 8px; gap: 5px; }
+    .history-row.latest { padding: 8px 10px; gap: 5px; }
+    .history-row.latest .history-dot {
+      width: var(--hdot-size, 28px);
+      height: var(--hdot-size, 28px);
+    }
+    .history-row.latest .hdot-icon { font-size: 0.7rem; }
+    .history-row.latest .history-feedback { padding-top: 3px; }
+    .history-feedback { gap: 3px; flex-wrap: wrap; }
+    .fb-badge { padding: 2px 5px; font-size: 0.6rem; }
+    .fb-time { font-size: 0.55rem; }
+    .history-num { font-size: 0.65rem; min-width: 18px; }
+    .history-colors { gap: 4px; }
+
+    /* Overlays */
+    .reveal-dot { width: 36px; height: 36px; font-size: 0.9rem; }
+    .win-card, .reveal-card { padding: 24px 16px; }
+    .win-stat { padding: 10px 8px; }
+    .win-stat .stat-val { font-size: 1.1rem; }
+    .win-stat .stat-label { font-size: 0.6rem; }
+    .win-stats, .reveal-stats { gap: 8px; flex-wrap: wrap; }
+    .feedback-text { font-size: 0.78rem; padding: 8px 10px; }
+    .slots-label, .palette-label, .history-label { font-size: 0.7rem; margin-bottom: 6px; }
+  }
+  @media (max-width: 360px) {
+    .header h1 { display: none; }
+    .header-left a svg { width: 22px; height: 22px; }
+    .setup-card .subtitle { font-size: 0.72rem; }
+    .preview-item { font-size: 0.72rem; }
+    .history-colors { gap: 3px; }
+  }
+  @media (max-height: 500px) and (orientation: landscape) {
+    .setup-screen { min-height: auto; padding: 10px; }
+    .setup-card { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <a href="https://online-gamezone.com" style="text-decoration:none;display:flex;align-items:center;" title="online-gamezone.com"><svg width="120" height="28" viewBox="0 0 120 28" fill="none"><rect width="28" height="28" rx="7" fill="#6c5ce7"/><path d="M7 11h14M7 14h14M7 17h14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="11" r="1.5" fill="#fdcb6e"/><circle cx="18" cy="14" r="1.5" fill="#00b894"/><circle cx="13" cy="17" r="1.5" fill="#e17055"/><text x="33" y="12" fill="#b0b0c8" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="8.5" font-weight="700">online-</text><text x="33" y="24" fill="#6c5ce7" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="10.5" font-weight="800">gamezone</text></svg></a>
+    <h1>🧠 Master Strategist</h1>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-outline" onclick="toggleHowToPlay()" style="padding:6px 10px;">❓</button>
+    <span class="check-count" id="checkCount" style="display:none;">Checks: 0</span>
+    <span class="help-counter" id="helpCountEl" style="display:none;">Helps: 0</span>
+    <span class="timer-display" id="timerDisplay" style="display:none;">00:00</span>
+    <button class="btn btn-danger" id="endGameBtn" style="display:none;" onclick="endGame()">🔓 End &amp; Reveal</button>
+  </div>
+</div>
+
+<!-- Setup Screen -->
+<div class="setup-screen" id="setupScreen">
+  <div class="setup-card">
+    <h2>🧠 Master Strategist</h2>
+    <p class="subtitle">Crack the secret color code! Choose difficulty and see if you can deduce the hidden pattern.</p>
+
+    <div class="setup-group">
+      <label>Number of Items (Code Length)</label>
+      <div class="slider-row">
+        <input type="range" id="numSlider" min="3" max="9" value="4" />
+        <span class="slider-val" id="numVal">4</span>
+      </div>
+    </div>
+
+    <div class="setup-group">
+      <label>Extra Decoy Items</label>
+      <div class="slider-row">
+        <input type="range" id="extraSlider" min="0" max="4" value="2" />
+        <span class="slider-val" id="extraVal">2</span>
+      </div>
+    </div>
+
+    <div class="setup-group">
+      <label>Preview</label>
+      <div class="setup-preview">
+        <div class="preview-item">🔢 Code length: <strong id="previewNum">4</strong></div>
+        <div class="preview-item">🎨 Total colors: <strong id="previewTotal">6</strong></div>
+        <div class="preview-item">🎭 Extra decoys: <strong id="previewExtra">2</strong></div>
+      </div>
+    </div>
+
+    <button class="setup-start" id="startBtn">Start Game</button>
+    <div style="text-align:center;margin-top:14px;">
+      <button class="btn btn-outline" onclick="toggleHowToPlay()" style="font-size:0.85rem;">❓ How to Play</button>
+    </div>
+  </div>
+</div>
+
+<!-- Game Screen -->
+<div class="game-screen" id="gameScreen">
+  <div class="slots-section">
+    <div class="slots-label">Your Guess — tap a color to place it</div>
+    <div class="slots-row" id="slotsRow"></div>
+  </div>
+
+  <div class="palette-section">
+    <div class="palette-label" id="paletteLabel">Available Colors</div>
+    <div class="palette" id="palette"></div>
+  </div>
+
+  <div class="feedback-text" id="feedbackText"></div>
+
+  <div class="game-actions">
+    <button class="btn btn-outline" onclick="clearSlots()">🗑️ Clear</button>
+    <button class="btn btn-outline" onclick="randomizeSlots()">🎲 Randomize</button>
+    <button class="btn btn-help" id="helpBtn" onclick="toggleHelpMode()">💡 Help</button>
+    <button class="btn btn-success" id="checkBtn" onclick="checkGuess()" disabled>✅ Check</button>
+  </div>
+
+  <div class="history-section">
+    <div class="history-label">Guess History</div>
+    <div class="history-list" id="historyList">
+      <div style="text-align:center;color:var(--text-dim);font-size:0.85rem;padding:12px;">No guesses yet — make your first move!</div>
+    </div>
+  </div>
+</div>
+
+<!-- Win Overlay -->
+<div class="win-overlay" id="winOverlay">
+  <div class="win-card">
+    <h2>🎉 You Cracked It!</h2>
+    <p class="win-subtitle">You decoded the secret pattern!</p>
+    <div class="win-secret" id="winSecret"></div>
+    <div class="win-stats">
+      <div class="win-stat">
+        <div class="stat-val" id="winChecks">0</div>
+        <div class="stat-label">Checks</div>
+      </div>
+      <div class="win-stat">
+        <div class="stat-val" id="winHelps">0</div>
+        <div class="stat-label">Helps</div>
+      </div>
+      <div class="win-stat">
+        <div class="stat-val" id="winTime">00:00</div>
+        <div class="stat-label">Time</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;" onclick="newGame()">🔄 Play Again</button>
+  </div>
+</div>
+
+<!-- Reveal Overlay -->
+<div class="reveal-overlay" id="revealOverlay">
+  <div class="reveal-card">
+    <h2>🔓 Answer Revealed</h2>
+    <p class="reveal-subtitle">The secret code was...</p>
+    <div class="reveal-label">Secret Pattern</div>
+    <div class="reveal-secret" id="revealSecret"></div>
+    <div class="reveal-stats">
+      <div class="win-stat">
+        <div class="stat-val" id="revealChecks">0</div>
+        <div class="stat-label">Checks Made</div>
+      </div>
+      <div class="win-stat">
+        <div class="stat-val" id="revealHelps">0</div>
+        <div class="stat-label">Helps Used</div>
+      </div>
+      <div class="win-stat">
+        <div class="stat-val" id="revealTime">00:00</div>
+        <div class="stat-label">Time Elapsed</div>
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;" onclick="newGame()">🔄 New Game</button>
+  </div>
+</div>
+
+<!-- How to Play Overlay -->
+<div class="htp-overlay" id="htpOverlay">
+  <div class="htp-card">
+    <h2>❓ How to Play</h2>
+
+    <div class="htp-section">
+      <h3>Objective</h3>
+      <p>A secret color code is hidden. Your goal is to figure out <strong style="color:var(--text)">which colors</strong> are in the code and in <strong style="color:var(--text)">what order</strong>, using as few guesses as possible.</p>
+    </div>
+
+    <div class="htp-section">
+      <h3>Setup</h3>
+      <ul>
+        <li>Choose the <strong style="color:var(--text)">code length</strong> (3–9 items) — how many colors are in the secret code.</li>
+        <li>Choose <strong style="color:var(--text)">extra decoy colors</strong> (0–4) — these are mixed in to make it harder.</li>
+        <li>The game picks random colors and creates a hidden pattern you must crack.</li>
+      </ul>
+    </div>
+
+    <div class="htp-section">
+      <h3>How to Guess</h3>
+      <ul>
+        <li><strong style="color:var(--text)">Tap a color</strong> from the palette to place it in the first empty slot.</li>
+        <li><strong style="color:var(--text)">Tap a filled slot</strong> to remove a color and try a different one.</li>
+        <li>Fill all slots, then press <strong style="color:var(--success)">✅ Check</strong> to submit your guess.</li>
+      </ul>
+    </div>
+
+    <div class="htp-section">
+      <h3>Reading Feedback</h3>
+      <p>After each guess, you'll see feedback badges:</p>
+      <div class="htp-legend">
+        <div class="htp-legend-item"><span class="htp-legend-dot" style="background:var(--accent)"></span> <strong>✅ Total</strong> — correct colors (regardless of position)</div>
+        <div class="htp-legend-item"><span class="htp-legend-dot" style="background:var(--success)"></span> <strong>🎯 Position</strong> — correct color AND correct position</div>
+        <div class="htp-legend-item"><span class="htp-legend-dot" style="background:#fdcb6e"></span> <strong>🔄 Misplaced</strong> — correct color but wrong position</div>
+      </div>
+    </div>
+
+    <div class="htp-section">
+      <h3>Tools &amp; Actions</h3>
+      <ul>
+        <li><strong style="color:var(--text)">🔒 Lock</strong> — lock a slot so Clear/Randomize won't change it.</li>
+        <li><strong style="color:var(--text)">✓ Confirm</strong> — mark a color you're sure is correct (green ring). Click the badge on a slot or the ✓ button under a palette color.</li>
+        <li><strong style="color:var(--text)">✕ Eliminate</strong> — cross out a color you know is wrong.</li>
+        <li><strong style="color:var(--text)">🗑️ Clear</strong> — empty all unlocked slots.</li>
+        <li><strong style="color:var(--text)">🎲 Randomize</strong> — fill empty unlocked slots with random colors.</li>
+        <li><strong style="color:var(--text)">💡 Help</strong> — reveals the correct color for one slot (counts as a "help").</li>
+        <li><strong style="color:var(--text)">🔓 End &amp; Reveal</strong> — give up and see the answer.</li>
+      </ul>
+    </div>
+
+    <div class="htp-section">
+      <h3>Winning</h3>
+      <p>Get all colors in the correct positions (🎯 equals code length) to win! Your score is based on how few checks and helps you used, and how fast you were.</p>
+    </div>
+
+    <button class="btn btn-primary htp-close" onclick="toggleHowToPlay()">Got it!</button>
+  </div>
+</div>
+
+<canvas id="confettiCanvas"></canvas>
+
+<script>
+  // ===== Color Definitions =====
+  const ALL_COLORS = [
+    { name: 'Red',    hex: '#e74c3c', icon: '❤️' },
+    { name: 'Blue',   hex: '#3498db', icon: '💎' },
+    { name: 'Green',  hex: '#2ecc71', icon: '🍀' },
+    { name: 'Yellow', hex: '#f1c40f', icon: '⭐' },
+    { name: 'Purple', hex: '#9b59b6', icon: '🔮' },
+    { name: 'Orange', hex: '#e67e22', icon: '🔥' },
+    { name: 'Pink',   hex: '#fd79a8', icon: '🌸' },
+    { name: 'Cyan',   hex: '#00cec9', icon: '💧' },
+    { name: 'Teal',   hex: '#1abc9c', icon: '🌿' },
+    { name: 'Coral',  hex: '#ff6b6b', icon: '🌺' },
+    { name: 'Lime',   hex: '#a8e063', icon: '🍋' },
+    { name: 'Gold',   hex: '#fdcb6e', icon: '👑' },
+    { name: 'Indigo', hex: '#6c5ce7', icon: '🎵' },
+  ];
+
+  const STORAGE_KEY = 'ms_game_state_v1';
+
+  // ===== State =====
+  let num = 4;
+  let extra = 2;
+  let secretCode = [];
+  let availableColors = [];
+  let slots = [];
+  let lockedSlots = [];
+  let helpLockedSlots = [];
+  let selectedColorIdx = null;
+  let guessHistory = [];
+  let checkCounter = 0;
+  let helpCounter = 0;
+  let helpMode = false;
+  let timerInterval = null;
+  let startTime = null;
+  let elapsedMs = 0;
+  let timerStarted = false;
+  let gameActive = false;
+  let eliminatedHexes = new Set();
+  let confirmedHexes = new Set();
+  let lastCheckTime = 0;
+
+  // ===== DOM =====
+  const setupScreen = document.getElementById('setupScreen');
+  const gameScreen = document.getElementById('gameScreen');
+  const numSlider = document.getElementById('numSlider');
+  const extraSlider = document.getElementById('extraSlider');
+  const numVal = document.getElementById('numVal');
+  const extraVal = document.getElementById('extraVal');
+  const previewNum = document.getElementById('previewNum');
+  const previewExtra = document.getElementById('previewExtra');
+  const previewTotal = document.getElementById('previewTotal');
+  const slotsRow = document.getElementById('slotsRow');
+  const paletteEl = document.getElementById('palette');
+  const checkBtn = document.getElementById('checkBtn');
+  const historyList = document.getElementById('historyList');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const checkCountEl = document.getElementById('checkCount');
+  const winOverlay = document.getElementById('winOverlay');
+  const feedbackText = document.getElementById('feedbackText');
+  const revealOverlay = document.getElementById('revealOverlay');
+  const endGameBtn = document.getElementById('endGameBtn');
+  const helpCountEl = document.getElementById('helpCountEl');
+  const helpBtn = document.getElementById('helpBtn');
+  const paletteLabel = document.getElementById('paletteLabel');
+
+  // ===== Setup Sliders =====
+  function updatePreview() {
+    num = parseInt(numSlider.value);
+    extra = parseInt(extraSlider.value);
+    numVal.textContent = num;
+    extraVal.textContent = extra;
+    previewNum.textContent = num;
+    previewExtra.textContent = extra;
+    previewTotal.textContent = num + extra;
+  }
+  numSlider.addEventListener('input', updatePreview);
+  extraSlider.addEventListener('input', updatePreview);
+
+  // ===== Start Game =====
+  document.getElementById('startBtn').addEventListener('click', () => {
+    num = parseInt(numSlider.value);
+    extra = parseInt(extraSlider.value);
+    startGame();
+  });
+
+  function startGame() {
+    // Pick colors
+    const shuffled = [...ALL_COLORS].sort(() => Math.random() - 0.5);
+    availableColors = shuffled.slice(0, num + extra);
+    // Secret code: pick num from the first num colors (all used, order matters)
+    const codePool = [...availableColors].sort(() => Math.random() - 0.5);
+    secretCode = codePool.slice(0, num);
+
+    slots = new Array(num).fill(null);
+    lockedSlots = new Array(num).fill(false);
+    helpLockedSlots = new Array(num).fill(false);
+    selectedColorIdx = null;
+    guessHistory = [];
+    checkCounter = 0;
+    helpCounter = 0;
+    helpMode = false;
+    elapsedMs = 0;
+    lastCheckTime = 0;
+    timerStarted = false;
+    gameActive = true;
+    eliminatedHexes = new Set();
+    confirmedHexes = new Set();
+
+    showGameUI();
+    applyDynamicSizing();
+
+    renderPalette();
+    renderSlots();
+    historyList.innerHTML = '<div style="text-align:center;color:var(--text-dim);font-size:0.85rem;padding:12px;">No guesses yet — make your first move!</div>';
+    updateCheckBtn();
+
+    // Timer starts on first check, not here
+    if (timerInterval) clearInterval(timerInterval);
+    saveState();
+  }
+
+  function showGameUI() {
+    setupScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    timerDisplay.style.display = 'inline-block';
+    checkCountEl.style.display = 'inline-block';
+    helpCountEl.style.display = 'inline-block';
+    endGameBtn.style.display = 'inline-block';
+    checkCountEl.textContent = `Checks: ${checkCounter}`;
+    helpCountEl.textContent = `Helps: ${helpCounter}`;
+    timerDisplay.textContent = timerStarted ? formatTime(elapsedMs) : '00:00';
+    feedbackText.textContent = '';
+    feedbackText.style.display = 'none';
+    if (helpBtn) helpBtn.classList.remove('active');
+  }
+
+  function applyDynamicSizing() {
+    // Dynamic sizes based on item count
+    let orbSize, slotSize, hdotSize, orbIconSize, slotIconSize;
+    if (num <= 3) { orbSize = 58; slotSize = 64; hdotSize = 34; orbIconSize = 1.3; slotIconSize = 1.5; }
+    else if (num <= 4) { orbSize = 52; slotSize = 58; hdotSize = 30; orbIconSize = 1.15; slotIconSize = 1.3; }
+    else if (num <= 6) { orbSize = 46; slotSize = 52; hdotSize = 28; orbIconSize = 1.05; slotIconSize = 1.2; }
+    else { orbSize = 38; slotSize = 44; hdotSize = 24; orbIconSize = 0.85; slotIconSize = 1.0; }
+    gameScreen.style.setProperty('--orb-size', orbSize + 'px');
+    gameScreen.style.setProperty('--slot-size', slotSize + 'px');
+    gameScreen.style.setProperty('--hdot-size', hdotSize + 'px');
+    gameScreen.style.setProperty('--orb-icon-size', orbIconSize + 'rem');
+    gameScreen.style.setProperty('--slot-icon-size', slotIconSize + 'rem');
+  }
+
+  // ===== Timer =====
+  function beginTimer() {
+    if (timerStarted) return;
+    timerStarted = true;
+    startTime = Date.now();
+    lastCheckTime = 0;
+    if (timerInterval) clearInterval(timerInterval);
+    timerInterval = setInterval(updateTimer, 100);
+  }
+
+  function updateTimer() {
+    if (!gameActive || !timerStarted) return;
+    elapsedMs = Date.now() - startTime;
+    timerDisplay.textContent = formatTime(elapsedMs);
+  }
+
+  function formatTime(ms) {
+    const totalSec = Math.floor(ms / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    return `${String(min).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  }
+
+  // ===== Render Palette =====
+  function renderPalette() {
+    paletteEl.innerHTML = '';
+    const total = availableColors.length;
+    const activeCount = availableColors.filter(c => !eliminatedHexes.has(c.hex)).length;
+    paletteLabel.textContent = `Available Colors (${activeCount}/${total})`;
+    const usedHexes = slots.filter(s => s !== null).map(s => s.hex);
+    availableColors.forEach((color, idx) => {
+      const isEliminated = eliminatedHexes.has(color.hex);
+      const isConfirmed = confirmedHexes.has(color.hex);
+      const isUsed = usedHexes.includes(color.hex);
+
+      const item = document.createElement('div');
+      item.className = 'palette-item';
+
+      const orb = document.createElement('div');
+      orb.className = 'color-orb';
+      if (isUsed && !isEliminated) orb.classList.add('used');
+      if (isEliminated) orb.classList.add('eliminated');
+      if (isConfirmed && !isEliminated) orb.classList.add('confirmed');
+      orb.style.background = color.hex;
+      orb.innerHTML = `<span class="orb-icon">${color.icon}</span>`;
+      orb.title = color.name;
+      // Click: auto-place in first empty unlocked slot
+      orb.addEventListener('click', () => {
+        if (isEliminated || isUsed) return;
+        const emptyIdx = slots.findIndex((s, i) => s === null && !lockedSlots[i] && !helpLockedSlots[i]);
+        if (emptyIdx === -1) return;
+        slots[emptyIdx] = availableColors[idx];
+        selectedColorIdx = null;
+        renderPalette();
+        renderSlots();
+        updateCheckBtn();
+        saveState();
+      });
+      item.appendChild(orb);
+
+      // Action buttons row
+      const actions = document.createElement('div');
+      actions.className = 'orb-actions';
+
+      // Confirm button
+      const confirmBtn = document.createElement('button');
+      confirmBtn.className = 'orb-action-btn' + (isConfirmed ? ' confirm-active' : '');
+      confirmBtn.innerHTML = '✓';
+      confirmBtn.title = isConfirmed ? 'Remove confirmed flag' : 'Mark as correct color';
+      confirmBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirmedHexes.has(color.hex)) {
+          confirmedHexes.delete(color.hex);
+        } else {
+          confirmedHexes.add(color.hex);
+        }
+        renderPalette();
+        renderSlots();
+        renderHistory();
+        saveState();
+      });
+      actions.appendChild(confirmBtn);
+
+      // Eliminate button
+      const elimBtn = document.createElement('button');
+      elimBtn.className = 'orb-action-btn' + (isEliminated ? ' elim-active' : '');
+      elimBtn.innerHTML = '✕';
+      elimBtn.title = isEliminated ? 'Restore this color' : 'Eliminate this color';
+      if (isUsed && !isEliminated) {
+        elimBtn.style.opacity = '0.2';
+        elimBtn.style.pointerEvents = 'none';
+      }
+      elimBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (isUsed) return;
+        if (eliminatedHexes.has(color.hex)) {
+          eliminatedHexes.delete(color.hex);
+        } else {
+          eliminatedHexes.add(color.hex);
+          confirmedHexes.delete(color.hex);
+        }
+        renderPalette();
+        renderSlots();
+        renderHistory();
+        saveState();
+      });
+      actions.appendChild(elimBtn);
+
+      item.appendChild(actions);
+      paletteEl.appendChild(item);
+    });
+  }
+
+  // ===== Render Slots =====
+  function renderSlots() {
+    slotsRow.innerHTML = '';
+    slots.forEach((color, idx) => {
+      const wrap = document.createElement('div');
+      wrap.className = 'slot-wrap';
+      const slot = document.createElement('div');
+      slot.className = 'slot';
+      const isLocked = lockedSlots[idx];
+      const isHelpLocked = helpLockedSlots[idx];
+      if (color) {
+        slot.classList.add('filled');
+        const isColorConfirmed = confirmedHexes.has(color.hex);
+        if (isColorConfirmed) slot.classList.add('confirmed');
+        if (isHelpLocked) slot.classList.add('help-locked');
+        else if (isLocked) slot.classList.add('locked');
+        slot.style.background = color.hex;
+        slot.innerHTML = `<span class="slot-icon">${color.icon}</span>`;
+        // Confirm badge on slot
+        const badge = document.createElement('div');
+        badge.className = 'slot-confirm-badge';
+        badge.innerHTML = isColorConfirmed ? '✓' : '○';
+        badge.style.background = isColorConfirmed ? 'var(--success)' : 'var(--bg-cell)';
+        badge.style.color = isColorConfirmed ? '#fff' : 'var(--text-dim)';
+        badge.title = isColorConfirmed ? 'Remove confirmed flag' : 'Mark as correct color';
+        badge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirmedHexes.has(color.hex)) {
+            confirmedHexes.delete(color.hex);
+          } else {
+            confirmedHexes.add(color.hex);
+          }
+          renderPalette();
+          renderSlots();
+          renderHistory();
+          saveState();
+        });
+        slot.appendChild(badge);
+        slot.title = `Slot ${idx + 1}: ${color.name}` + (isHelpLocked ? ' (help-locked)' : isLocked ? ' (locked)' : ' (click to remove)');
+      } else {
+        slot.textContent = idx + 1;
+        slot.title = `Slot ${idx + 1}: empty` + (helpMode ? ' — click to get help!' : '');
+        if (helpMode) slot.classList.add('help-target');
+      }
+      slot.addEventListener('click', () => {
+        // Help mode: fill with correct answer
+        if (helpMode && !isHelpLocked) {
+          beginTimer();
+          slots[idx] = secretCode[idx];
+          lockedSlots[idx] = true;
+          helpLockedSlots[idx] = true;
+          helpCounter++;
+          helpCountEl.textContent = `Helps: ${helpCounter}`;
+          helpMode = false;
+          if (helpBtn) helpBtn.classList.remove('active');
+          renderPalette();
+          renderSlots();
+          updateCheckBtn();
+          saveState();
+          return;
+        }
+        if (color && !isLocked && !isHelpLocked) {
+          slots[idx] = null;
+          lockedSlots[idx] = false;
+          selectedColorIdx = null;
+          renderPalette();
+          renderSlots();
+          updateCheckBtn();
+          saveState();
+        } else if (!color && selectedColorIdx !== null) {
+          slots[idx] = availableColors[selectedColorIdx];
+          selectedColorIdx = null;
+          renderPalette();
+          renderSlots();
+          updateCheckBtn();
+          saveState();
+        }
+      });
+      wrap.appendChild(slot);
+      // Lock button (not for help-locked)
+      if (color && !isHelpLocked) {
+        const lockBtn = document.createElement('button');
+        lockBtn.className = 'lock-btn' + (isLocked ? ' active' : '');
+        lockBtn.innerHTML = isLocked ? '🔒' : '🔓';
+        lockBtn.title = isLocked ? 'Unlock this slot' : 'Lock this slot';
+        lockBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          lockedSlots[idx] = !lockedSlots[idx];
+          renderSlots();
+          saveState();
+        });
+        wrap.appendChild(lockBtn);
+      } else if (color && isHelpLocked) {
+        const lockIcon = document.createElement('span');
+        lockIcon.style.cssText = 'font-size:0.7rem;opacity:0.7;';
+        lockIcon.textContent = '🔐';
+        lockIcon.title = 'Help-locked (cannot unlock)';
+        wrap.appendChild(lockIcon);
+      }
+      slotsRow.appendChild(wrap);
+    });
+  }
+
+  // ===== Clear Slots =====
+  function clearSlots() {
+    for (let i = 0; i < num; i++) {
+      if (!lockedSlots[i] && !helpLockedSlots[i]) {
+        slots[i] = null;
+      }
+    }
+    selectedColorIdx = null;
+    renderPalette();
+    renderSlots();
+    updateCheckBtn();
+    saveState();
+  }
+
+  // ===== Randomize Slots =====
+  function randomizeSlots() {
+    // Get colors not eliminated and not in locked/help-locked slots
+    const lockedHexes = slots.filter((s, i) => s !== null && (lockedSlots[i] || helpLockedSlots[i])).map(s => s.hex);
+    const pool = availableColors.filter(c => !eliminatedHexes.has(c.hex) && !lockedHexes.includes(c.hex));
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    let pickIdx = 0;
+    for (let i = 0; i < num; i++) {
+      if (!lockedSlots[i] && !helpLockedSlots[i]) {
+        slots[i] = pickIdx < shuffled.length ? shuffled[pickIdx++] : null;
+      }
+    }
+    selectedColorIdx = null;
+    renderPalette();
+    renderSlots();
+    updateCheckBtn();
+    saveState();
+  }
+
+  // ===== Check Button State =====
+  function updateCheckBtn() {
+    if (slots.some(s => s === null)) {
+      checkBtn.disabled = true;
+      return;
+    }
+    // Disable if identical to last checked guess
+    if (guessHistory.length > 0) {
+      const lastGuess = guessHistory[0].colors.map(c => c.hex).join(',');
+      const currentGuess = slots.map(s => s.hex).join(',');
+      checkBtn.disabled = (lastGuess === currentGuess);
+    } else {
+      checkBtn.disabled = false;
+    }
+  }
+
+  // ===== Check Guess =====
+  function checkGuess() {
+    if (!gameActive) return;
+    if (slots.some(s => s === null)) return;
+
+    // Start timer on first check
+    beginTimer();
+
+    checkCounter++;
+    checkCountEl.textContent = `Checks: ${checkCounter}`;
+
+    const guess = slots.map(s => s.hex);
+    const secret = secretCode.map(c => c.hex);
+
+    // Calculate feedback
+    let correctPosition = 0;
+    let correctColor = 0;
+    const secretUsed = new Array(num).fill(false);
+    const guessUsed = new Array(num).fill(false);
+
+    // First pass: exact matches
+    for (let i = 0; i < num; i++) {
+      if (guess[i] === secret[i]) {
+        correctPosition++;
+        secretUsed[i] = true;
+        guessUsed[i] = true;
+      }
+    }
+
+    // Second pass: color matches (misplaced)
+    for (let i = 0; i < num; i++) {
+      if (guessUsed[i]) continue;
+      for (let j = 0; j < num; j++) {
+        if (secretUsed[j]) continue;
+        if (guess[i] === secret[j]) {
+          correctColor++;
+          secretUsed[j] = true;
+          break;
+        }
+      }
+    }
+
+    // Time for this guess
+    const currentElapsed = Date.now() - startTime;
+    const guessDuration = currentElapsed - lastCheckTime;
+    lastCheckTime = currentElapsed;
+
+    // Add to history
+    guessHistory.unshift({
+      colors: slots.map(s => ({ ...s })),
+      correctPosition,
+      correctColor,
+      attempt: checkCounter,
+      time: formatTime(currentElapsed),
+      guessDuration: formatTime(guessDuration)
+    });
+    renderHistory();
+
+    // Show text feedback (swapped: colors=gold, positions=green)
+    feedbackText.style.display = 'block';
+    if (correctPosition === num) {
+      feedbackText.innerHTML = `<span style="color:var(--success)">🎉 All ${num} correct and in position!</span>`;
+    } else {
+      feedbackText.innerHTML = `<span style="color:#fdcb6e">${correctColor + correctPosition} correct color${(correctColor + correctPosition) !== 1 ? 's' : ''}</span> · <span style="color:var(--success)">${correctPosition} in correct position</span>`;
+    }
+
+    // Check win
+    if (correctPosition === num) {
+      gameActive = false;
+      clearInterval(timerInterval);
+      elapsedMs = Date.now() - startTime;
+      timerDisplay.textContent = formatTime(elapsedMs);
+      saveState();
+      showWin();
+      return;
+    }
+
+    // Keep slots — don't clear. Only clear unlocked if user wants via Clear button.
+    selectedColorIdx = null;
+    renderPalette();
+    renderSlots();
+    updateCheckBtn();
+    saveState();
+  }
+
+  // ===== Render History =====
+  function renderHistory() {
+    historyList.innerHTML = '';
+    guessHistory.forEach((entry, i) => {
+      const row = document.createElement('div');
+      row.className = 'history-row' + (i === 0 ? ' latest' : '');
+      row.style.animationDelay = (i * 0.05) + 's';
+
+      let colorsHtml = '';
+      entry.colors.forEach(c => {
+        const confirmed = confirmedHexes.has(c.hex) ? ' h-confirmed' : '';
+        colorsHtml += `<div class="history-dot${confirmed}" style="background:${c.hex};" title="${c.name}"><span class="hdot-icon">${c.icon}</span></div>`;
+      });
+
+      const totalCorrect = entry.correctPosition + entry.correctColor;
+
+      row.innerHTML = `
+        <span class="history-num">#${entry.attempt}</span>
+        <div class="history-colors">${colorsHtml}</div>
+        <div class="history-feedback">
+          <span class="fb-badge fb-total">✅ ${totalCorrect}</span>
+          <span class="fb-badge fb-correct">🎯 ${entry.correctPosition}</span>
+          <span class="fb-badge fb-misplaced">🔄 ${entry.correctColor}</span>
+          <span class="fb-time">⏱ ${entry.guessDuration}</span>
+        </div>
+      `;
+      historyList.appendChild(row);
+    });
+  }
+
+  // ===== Win =====
+  function showWin() {
+    // Show secret
+    const winSecret = document.getElementById('winSecret');
+    winSecret.innerHTML = '';
+    secretCode.forEach(c => {
+      const dot = document.createElement('div');
+      dot.className = 'win-secret-dot';
+      dot.style.background = c.hex;
+      dot.innerHTML = `<span style="font-size:1rem;">${c.icon}</span>`;
+      dot.title = c.name;
+      winSecret.appendChild(dot);
+    });
+
+    document.getElementById('winChecks').textContent = checkCounter;
+    document.getElementById('winHelps').textContent = helpCounter;
+    document.getElementById('winTime').textContent = formatTime(elapsedMs);
+
+    winOverlay.classList.add('open');
+    launchConfetti();
+  }
+
+  // ===== End Game =====
+  function endGame() {
+    if (!confirm('End the game? The answer will be revealed.')) return;
+    revealAnswer();
+  }
+
+  // ===== Reveal Answer =====
+  function revealAnswer() {
+    gameActive = false;
+    if (timerInterval) clearInterval(timerInterval);
+    if (timerStarted) {
+      elapsedMs = Date.now() - startTime;
+      timerDisplay.textContent = formatTime(elapsedMs);
+    }
+
+    const revealSecret = document.getElementById('revealSecret');
+    revealSecret.innerHTML = '';
+    secretCode.forEach(c => {
+      const dot = document.createElement('div');
+      dot.className = 'reveal-dot';
+      dot.style.background = c.hex;
+      dot.innerHTML = `<span style="font-size:1.1rem;">${c.icon}</span>`;
+      dot.title = c.name;
+      revealSecret.appendChild(dot);
+    });
+
+    document.getElementById('revealChecks').textContent = checkCounter;
+    document.getElementById('revealHelps').textContent = helpCounter;
+    document.getElementById('revealTime').textContent = timerStarted ? formatTime(elapsedMs) : '—';
+
+    revealOverlay.classList.add('open');
+    saveState();
+  }
+
+  // ===== How to Play =====
+  function toggleHowToPlay() {
+    const overlay = document.getElementById('htpOverlay');
+    overlay.classList.toggle('open');
+  }
+
+  // ===== Help Mode =====
+  function toggleHelpMode() {
+    if (!gameActive) return;
+    helpMode = !helpMode;
+    if (helpBtn) helpBtn.classList.toggle('active', helpMode);
+    renderSlots();
+  }
+
+  // ===== New Game (shared reset) =====
+  function newGame() {
+    gameActive = false;
+    if (timerInterval) clearInterval(timerInterval);
+    winOverlay.classList.remove('open');
+    revealOverlay.classList.remove('open');
+    stopConfetti();
+    localStorage.removeItem(STORAGE_KEY);
+
+    setupScreen.style.display = 'flex';
+    gameScreen.style.display = 'none';
+    timerDisplay.style.display = 'none';
+    checkCountEl.style.display = 'none';
+    helpCountEl.style.display = 'none';
+    endGameBtn.style.display = 'none';
+  }
+
+  // ===== Persistence =====
+  function saveState() {
+    try {
+      const state = {
+        num, extra, secretCode, availableColors, slots, lockedSlots, helpLockedSlots,
+        guessHistory, checkCounter, helpCounter, timerStarted, gameActive,
+        eliminatedHexes: [...eliminatedHexes],
+        confirmedHexes: [...confirmedHexes],
+        elapsedMs: timerStarted ? Date.now() - startTime : 0,
+        lastCheckTime
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  function loadState() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const s = JSON.parse(raw);
+      if (!s || !s.gameActive) { localStorage.removeItem(STORAGE_KEY); return false; }
+      num = s.num;
+      extra = s.extra;
+      secretCode = s.secretCode;
+      availableColors = s.availableColors;
+      slots = s.slots;
+      lockedSlots = s.lockedSlots;
+      helpLockedSlots = s.helpLockedSlots || new Array(num).fill(false);
+      guessHistory = s.guessHistory;
+      checkCounter = s.checkCounter;
+      helpCounter = s.helpCounter || 0;
+      timerStarted = s.timerStarted;
+      gameActive = s.gameActive;
+      eliminatedHexes = new Set(s.eliminatedHexes || []);
+      confirmedHexes = new Set(s.confirmedHexes || []);
+      elapsedMs = s.elapsedMs || 0;
+      lastCheckTime = s.lastCheckTime || 0;
+      helpMode = false;
+      selectedColorIdx = null;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function restoreGame() {
+    if (!loadState()) return false;
+
+    showGameUI();
+    applyDynamicSizing();
+    checkCountEl.textContent = `Checks: ${checkCounter}`;
+    helpCountEl.textContent = `Helps: ${helpCounter}`;
+
+    // Restart timer if it was running
+    if (timerStarted && gameActive) {
+      startTime = Date.now() - elapsedMs;
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(updateTimer, 100);
+      timerDisplay.textContent = formatTime(elapsedMs);
+    }
+
+    renderPalette();
+    renderSlots();
+    renderHistory();
+    updateCheckBtn();
+
+    // Show last feedback if there's history
+    if (guessHistory.length > 0) {
+      const last = guessHistory[0];
+      feedbackText.style.display = 'block';
+      if (last.correctPosition === num) {
+        feedbackText.innerHTML = `<span style="color:var(--success)">🎉 All ${num} correct and in position!</span>`;
+      } else {
+        feedbackText.innerHTML = `<span style="color:#fdcb6e">${last.correctColor + last.correctPosition} correct color${(last.correctColor + last.correctPosition) !== 1 ? 's' : ''}</span> · <span style="color:var(--success)">${last.correctPosition} in correct position</span>`;
+      }
+    }
+    return true;
+  }
+
+  // ===== Page Init =====
+  if (!restoreGame()) {
+    // No saved game — show setup screen (default)
+  }
+
+  // ===== Confetti =====
+  const confettiCanvas = document.getElementById('confettiCanvas');
+  const ctx = confettiCanvas.getContext('2d');
+  let confettiPieces = [];
+  let confettiRAF = null;
+
+  function resizeCanvas() {
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+
+  function launchConfetti() {
+    confettiPieces = [];
+    const colors = ['#e74c3c','#3498db','#2ecc71','#f1c40f','#9b59b6','#e67e22','#fd79a8','#00cec9','#fdcb6e','#6c5ce7'];
+    for (let i = 0; i < 200; i++) {
+      confettiPieces.push({
+        x: Math.random() * confettiCanvas.width,
+        y: Math.random() * confettiCanvas.height - confettiCanvas.height,
+        w: Math.random() * 8 + 4,
+        h: Math.random() * 6 + 3,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 3 + 1.5,
+        rot: Math.random() * 360,
+        rotV: (Math.random() - 0.5) * 8,
+      });
+    }
+    if (!confettiRAF) animateConfetti();
+  }
+
+  function animateConfetti() {
+    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    confettiPieces.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.rotV;
+      if (p.y > confettiCanvas.height + 20) {
+        p.y = -20;
+        p.x = Math.random() * confettiCanvas.width;
+      }
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx.restore();
+    });
+    confettiRAF = requestAnimationFrame(animateConfetti);
+  }
+
+  function stopConfetti() {
+    if (confettiRAF) {
+      cancelAnimationFrame(confettiRAF);
+      confettiRAF = null;
+    }
+    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+    confettiPieces = [];
+  }
+</script>
+</body>
+</html>

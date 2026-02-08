@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Online GameZone — Party Games Hub</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a1a;
+    --bg-card: #12132a;
+    --bg-section: #0e0f22;
+    --text: #e8e8f4;
+    --text-dim: #8b8da3;
+    --accent: #6c5ce7;
+    --accent-glow: rgba(108,92,231,0.25);
+    --border: #1e2040;
+    --radius: 16px;
+  }
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    scroll-behavior: smooth;
+  }
+
+  /* ===== Header ===== */
+  .site-header {
+    background: linear-gradient(135deg, #12132a 0%, #1a1b3a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+  }
+  .site-logo {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .site-logo .logo-dot { color: var(--accent); }
+  .site-nav { display: flex; gap: 20px; }
+  .site-nav a {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .site-nav a:hover { color: var(--text); }
+
+  /* ===== Hero ===== */
+  .hero {
+    text-align: center;
+    padding: 80px 24px 60px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(108,92,231,0.12) 0%, transparent 60%);
+  }
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+    line-height: 1.1;
+  }
+  .hero h1 .highlight { color: var(--accent); }
+  .hero p {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    max-width: 520px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+  }
+  .hero-badge {
+    display: inline-block;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .hero-badge span { color: var(--accent); }
+
+  /* ===== Section ===== */
+  .section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .section-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: var(--accent-glow);
+  }
+  .section-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+  }
+  .section-header p {
+    font-size: 0.88rem;
+    color: var(--text-dim);
+  }
+  .section-title-group { display: flex; flex-direction: column; gap: 2px; }
+
+  /* ===== Cards Grid ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .game-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+  .game-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), #a29bfe);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .game-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(108,92,231,0.15);
+  }
+  .game-card:hover::before { opacity: 1; }
+  .card-icon {
+    font-size: 2rem;
+    margin-bottom: 14px;
+  }
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .card-desc {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .card-tag {
+    display: inline-block;
+    margin-top: 14px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    align-self: flex-start;
+  }
+  .tag-play { background: rgba(0,184,148,0.15); color: #00b894; }
+  .tag-tool { background: rgba(253,203,110,0.15); color: #fdcb6e; }
+  .tag-host { background: rgba(108,92,231,0.15); color: #a29bfe; }
+
+  /* ===== Coming Soon ===== */
+  .coming-soon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 28px;
+  }
+  .coming-soon-card {
+    background: var(--bg-card);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 24px 20px;
+    text-align: center;
+    opacity: 0.6;
+  }
+  .coming-soon-card .card-icon { font-size: 1.8rem; margin-bottom: 8px; }
+  .coming-soon-card .card-title { font-size: 0.95rem; }
+  .coming-soon-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 8px;
+  }
+
+  /* ===== Footer ===== */
+  .site-footer {
+    text-align: center;
+    padding: 32px 24px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dim);
+    font-size: 0.8rem;
+  }
+  .site-footer a { color: var(--accent); text-decoration: none; }
+  .site-footer a:hover { text-decoration: underline; }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 600px) {
+    .hero { padding: 50px 16px 40px; }
+    .hero h1 { font-size: 2rem; }
+    .hero p { font-size: 1rem; }
+    .section { padding: 28px 16px 40px; }
+    .cards-grid { grid-template-columns: 1fr; }
+    .coming-soon-grid { grid-template-columns: repeat(2, 1fr); }
+    .site-nav { gap: 12px; }
+    .site-nav a { font-size: 0.8rem; }
+    .site-logo { font-size: 1.05rem; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="site-logo"><svg width="160" height="36" viewBox="0 0 160 36" fill="none" style="vertical-align:middle;"><rect width="36" height="36" rx="9" fill="#6c5ce7"/><path d="M9 14h18M9 18h18M9 22h18" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><circle cx="13" cy="14" r="2" fill="#fdcb6e"/><circle cx="23" cy="18" r="2" fill="#00b894"/><circle cx="17" cy="22" r="2" fill="#e17055"/><text x="44" y="16" fill="#b0b0c8" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="11" font-weight="700">online-</text><text x="44" y="31" fill="#6c5ce7" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="14" font-weight="800">gamezone</text></svg></div>
+  <nav class="site-nav">
+    <a href="#tambola">Tambola</a>
+    <a href="#strategy">Strategy</a>
+    <a href="#more-games">More Games</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-badge">🎉 <span>Your one-stop hub</span> for party games</div>
+  <h1>Welcome to<br><span class="highlight">Online GameZone</span></h1>
+  <p>Host epic game nights with friends and family. Everything you need — from hosting to playing — right in your browser.</p>
+</section>
+
+<section class="section" id="tambola">
+  <div class="section-header">
+    <div class="section-icon">🎱</div>
+    <div class="section-title-group">
+      <h2>Tambola / Housie</h2>
+      <p>The classic number-calling party game</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <a href="tambola.html" class="game-card">
+      <div class="card-icon">🎯</div>
+      <div class="card-title">Host a Game</div>
+      <div class="card-desc">Draw numbers, manage prizes, track winners. The complete Tambola host dashboard with auto-draw, themes, and announcements.</div>
+      <span class="card-tag tag-host">Host</span>
+    </a>
+
+    <a href="player.html" class="game-card">
+      <div class="card-icon">🎮</div>
+      <div class="card-title">Play Tambola</div>
+      <div class="card-desc">Pick your tickets, mark numbers as they're called, and track your progress toward rows and full house.</div>
+      <span class="card-tag tag-play">Play</span>
+    </a>
+
+    <a href="print_tickets.html" class="game-card">
+      <div class="card-icon">🖨️</div>
+      <div class="card-title">Print Tickets</div>
+      <div class="card-desc">Generate and print Tambola tickets on A4 sheets. Configurable layout with columns, rows, and orientation options.</div>
+      <span class="card-tag tag-tool">Tool</span>
+    </a>
+  </div>
+</section>
+
+<section class="section" id="strategy">
+  <div class="section-header">
+    <div class="section-icon">🧠</div>
+    <div class="section-title-group">
+      <h2>Strategy</h2>
+      <p>Test your logic and deduction skills</p>
+    </div>
+  </div>
+
+  <div class="cards-grid">
+    <a href="master-strategist.html" class="game-card">
+      <div class="card-icon">🧠</div>
+      <div class="card-title">Master Strategist</div>
+      <div class="card-desc">Crack the secret color code! Deduce the hidden pattern through logic — find out which colors are correct and which are in the right position.</div>
+      <span class="card-tag tag-play">Play</span>
+    </a>
+  </div>
+</section>
+
+<section class="section" id="more-games">
+  <div class="section-header">
+    <div class="section-icon">🕹️</div>
+    <div class="section-title-group">
+      <h2>More Games</h2>
+      <p>Coming soon to the GameZone</p>
+    </div>
+  </div>
+
+  <div class="coming-soon-grid">
+    <div class="coming-soon-card">
+      <div class="card-icon">🃏</div>
+      <div class="card-title">Cards Against</div>
+      <div class="coming-soon-badge">Coming Soon</div>
+    </div>
+    <div class="coming-soon-card">
+      <div class="card-icon">🎤</div>
+      <div class="card-title">Dumb Charades</div>
+      <div class="coming-soon-badge">Coming Soon</div>
+    </div>
+    <div class="coming-soon-card">
+      <div class="card-icon">❓</div>
+      <div class="card-title">Trivia Quiz</div>
+      <div class="coming-soon-badge">Coming Soon</div>
+    </div>
+    <div class="coming-soon-card">
+      <div class="card-icon">🎵</div>
+      <div class="card-title">Music Bingo</div>
+      <div class="coming-soon-badge">Coming Soon</div>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <p>© 2026 <a href="https://online-gamezone.com">online-gamezone.com</a> — Making party nights awesome 🎉</p>
+</footer>
+
+</body>
+</html>

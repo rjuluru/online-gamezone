@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Tambola Player</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1117;
+    --bg-card: #1a1d27;
+    --bg-cell: #252836;
+    --bg-cell-hover: #2e3245;
+    --text: #e8e8f0;
+    --text-dim: #8b8da3;
+    --accent: #6c5ce7;
+    --accent-hover: #5a4bd6;
+    --success: #00b894;
+    --danger: #e17055;
+    --marked: #fdcb6e;
+    --marked-text: #2d3436;
+    --border: #2d3040;
+    --shadow: 0 4px 24px rgba(0,0,0,0.3);
+    --radius: 12px;
+  }
+
+  html, body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+  }
+
+  /* ===== Header ===== */
+  .header {
+    background: var(--bg-card);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  .header-actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover { opacity: 0.9; }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-outline:hover { background: var(--bg-cell); }
+
+  /* ===== Setup Screen ===== */
+  .setup-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 56px);
+    padding: 20px;
+  }
+  .setup-card {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: var(--shadow);
+  }
+  .setup-card h2 {
+    font-size: 1.4rem;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+  .setup-group {
+    margin-bottom: 20px;
+  }
+  .setup-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .ticket-count-selector {
+    display: flex;
+    gap: 10px;
+  }
+  .ticket-count-btn {
+    flex: 1;
+    padding: 14px 8px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--bg-cell);
+    color: var(--text);
+    font-size: 1.4rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .ticket-count-btn:hover { border-color: var(--accent); background: var(--bg-cell-hover); }
+  .ticket-count-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 16px rgba(108,92,231,0.3);
+  }
+  .mode-selector {
+    display: flex;
+    gap: 10px;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 14px 12px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--bg-cell);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .mode-btn:hover { border-color: var(--accent); }
+  .mode-btn.active {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+  .mode-btn small {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 400;
+    margin-top: 4px;
+    opacity: 0.8;
+  }
+  .setup-start {
+    width: 100%;
+    padding: 16px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+  .setup-start:hover { background: var(--accent-hover); }
+  .setup-start:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ===== Selection Screen ===== */
+  .selection-screen {
+    display: none;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  .selection-header {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .selection-header h2 { font-size: 1.2rem; margin-bottom: 4px; }
+  .selection-header p { font-size: 0.85rem; color: var(--text-dim); }
+  .selection-count {
+    text-align: center;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .ticket-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .ticket-select-item {
+    padding: 12px 8px;
+    border-radius: 8px;
+    border: 2px solid var(--border);
+    background: var(--bg-cell);
+    cursor: pointer;
+    text-align: center;
+    font-family: monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .ticket-select-item:hover { border-color: var(--accent); }
+  .ticket-select-item.selected {
+    border-color: var(--success);
+    background: rgba(0,184,148,0.15);
+    color: var(--success);
+  }
+  .ticket-select-item.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .selection-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+  }
+  .selection-search {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto 14px;
+    display: block;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-cell);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: monospace;
+    outline: none;
+  }
+  .selection-search:focus { border-color: var(--accent); }
+  .selection-search::placeholder { color: var(--text-dim); opacity: 0.6; }
+  .home-link {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: color 0.2s;
+  }
+  .home-link:hover { color: var(--text); }
+
+  /* ===== Play Screen ===== */
+  .play-screen {
+    display: none;
+    padding: 12px;
+  }
+  .tickets-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  .player-ticket {
+    background: var(--bg-card);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .player-ticket-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .player-ticket-header .ticket-label {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .player-ticket-header .ticket-id {
+    font-family: monospace;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .player-ticket-grid {
+    display: grid;
+    grid-template-columns: repeat(9, minmax(0, 1fr));
+    grid-template-rows: repeat(3, auto);
+    gap: 4px;
+  }
+  .player-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    padding: 10px 2px;
+    min-height: 44px;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .player-cell.empty {
+    background: var(--bg-cell);
+    border-color: transparent;
+  }
+  .player-cell.has-number {
+    background: var(--bg-cell);
+    border-color: var(--border);
+    cursor: pointer;
+  }
+  .player-cell.has-number:hover {
+    border-color: var(--accent);
+    background: var(--bg-cell-hover);
+  }
+  .player-cell.has-number:active {
+    transform: scale(0.93);
+  }
+  .player-cell.marked {
+    background: var(--marked) !important;
+    color: var(--marked-text) !important;
+    border-color: var(--marked) !important;
+    box-shadow: 0 0 10px rgba(253,203,110,0.3);
+  }
+  .player-ticket-status {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .row-status-pill {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: var(--bg-cell);
+    color: var(--text-dim);
+  }
+  .row-status-pill.complete {
+    background: rgba(0,184,148,0.15);
+    color: var(--success);
+  }
+  .full-house-status {
+    text-align: center;
+    margin-top: 6px;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: 0.9rem;
+  }
+  .full-house-status.incomplete {
+    background: var(--bg-cell);
+    color: var(--text-dim);
+  }
+  .full-house-status.complete {
+    background: linear-gradient(135deg, #a8e063, #56ab2f);
+    color: #fff;
+    animation: fhPulse 1s infinite alternate;
+  }
+  @keyframes fhPulse {
+    from { box-shadow: 0 0 8px rgba(86,171,47,0.3); }
+    to { box-shadow: 0 0 20px rgba(86,171,47,0.6); }
+  }
+
+  .unmark-all-btn {
+    display: block;
+    margin: 16px auto 0;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    background: var(--danger);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .unmark-all-btn:hover { opacity: 0.9; }
+
+  .no-tickets-msg {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-dim);
+    font-size: 1rem;
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 600px) {
+    .setup-card { padding: 20px; margin: 10px; }
+    .setup-card h2 { font-size: 1.15rem; }
+    .ticket-count-btn { padding: 12px 6px; font-size: 1.2rem; }
+    .mode-btn { padding: 10px 8px; font-size: 0.82rem; }
+    .player-cell { font-size: 0.9rem; padding: 7px 1px; min-height: 36px; border-radius: 6px; }
+    .player-ticket { padding: 12px; }
+    .player-ticket-grid { gap: 3px; }
+    .ticket-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+  }
+
+  @media (max-width: 380px) {
+    .player-cell { font-size: 0.78rem; padding: 5px 0; min-height: 30px; }
+    .player-ticket { padding: 8px; }
+    .player-ticket-grid { gap: 2px; }
+    .header h1 { font-size: 0.95rem; }
+  }
+
+  @media (max-height: 500px) and (orientation: landscape) {
+    .setup-screen { min-height: auto; padding: 10px; }
+    .setup-card { padding: 16px; }
+    .player-cell { font-size: 0.85rem; padding: 4px 1px; min-height: 28px; }
+    .player-ticket { padding: 8px; }
+    .player-ticket-grid { gap: 2px; }
+    .tickets-container { gap: 8px; }
+  }
+
+  /* Multi-ticket layout for wider screens */
+  @media (min-width: 768px) {
+    .tickets-container {
+      max-width: 100%;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding: 0 16px;
+    }
+  }
+  @media (min-width: 1200px) {
+    .tickets-container {
+      grid-template-columns: repeat(2, 1fr);
+      max-width: 1100px;
+    }
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="https://online-gamezone.com" style="text-decoration:none;display:flex;align-items:center;" title="online-gamezone.com"><svg width="120" height="28" viewBox="0 0 120 28" fill="none"><rect width="28" height="28" rx="7" fill="#6c5ce7"/><path d="M7 11h14M7 14h14M7 17h14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/><circle cx="10" cy="11" r="1.5" fill="#fdcb6e"/><circle cx="18" cy="14" r="1.5" fill="#00b894"/><circle cx="13" cy="17" r="1.5" fill="#e17055"/><text x="33" y="12" fill="#b0b0c8" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="8.5" font-weight="700">online-</text><text x="33" y="24" fill="#6c5ce7" font-family="-apple-system,BlinkMacSystemFont,sans-serif" font-size="10.5" font-weight="800">gamezone</text></svg></a>
+      <h1 id="pageTitle">🎱 Tambola Player</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-danger" id="newGameBtn" style="display:none;" onclick="startNewGame()">🔄 New Game</button>
+      <button class="btn btn-outline" id="backBtn" style="display:none;" onclick="goBack()">← Back</button>
+    </div>
+  </div>
+
+  <!-- Setup Screen -->
+  <div class="setup-screen" id="setupScreen">
+    <div class="setup-card">
+      <h2>🎲 Pick Your Tickets</h2>
+
+      <div class="setup-group">
+        <label>How many tickets?</label>
+        <div class="ticket-count-selector" id="countSelector">
+          <button class="ticket-count-btn" data-count="1">1</button>
+          <button class="ticket-count-btn active" data-count="2">2</button>
+          <button class="ticket-count-btn" data-count="3">3</button>
+          <button class="ticket-count-btn" data-count="4">4</button>
+        </div>
+      </div>
+
+      <div class="setup-group">
+        <label>Selection Mode</label>
+        <div class="mode-selector" id="modeSelector">
+          <button class="mode-btn active" data-mode="random">
+            🎲 Random
+            <small>Auto-pick tickets for you</small>
+          </button>
+          <button class="mode-btn" data-mode="select">
+            ✋ Manual
+            <small>Choose your own tickets</small>
+          </button>
+        </div>
+      </div>
+
+      <button class="setup-start" id="startBtn">Start Playing</button>
+      <div id="setupError" style="color:var(--danger);text-align:center;margin-top:10px;font-size:0.85rem;display:none;"></div>
+    </div>
+  </div>
+
+  <!-- Selection Screen (Manual mode) -->
+  <div class="selection-screen" id="selectionScreen">
+    <div class="selection-header">
+      <h2>Select Your Tickets</h2>
+      <p>Tap to select tickets. You can preview the ticket numbers.</p>
+    </div>
+    <div class="selection-count" id="selectionCount">0 / 2 selected</div>
+    <input type="text" class="selection-search" id="ticketSearchInput" placeholder="Search ticket ID..." autocomplete="off" />
+    <div class="ticket-grid" id="ticketSelectGrid"></div>
+    <div class="selection-actions">
+      <button class="btn btn-outline" onclick="goBack()">← Back</button>
+      <button class="btn btn-primary" id="confirmSelectionBtn" disabled>Confirm Selection</button>
+    </div>
+  </div>
+
+  <!-- Play Screen -->
+  <div class="play-screen" id="playScreen">
+    <div class="tickets-container" id="ticketsContainer"></div>
+    <button class="unmark-all-btn" id="unmarkAllBtn" onclick="unmarkAll()">↩ Unmark All Numbers</button>
+  </div>
+
+  <script src="finalTickets.js"></script>
+  <script>
+    // ===== State =====
+    let allTickets = [];
+    let ticketCount = 2;
+    let selectionMode = 'random';
+    let selectedTicketIds = [];
+    let activeTickets = []; // tickets being played
+    let markedNumbers = {}; // { ticketId: Set of numbers }
+
+    const PLAYER_KEY = 'tambola_player_state';
+
+    // ===== DOM =====
+    const setupScreen = document.getElementById('setupScreen');
+    const selectionScreen = document.getElementById('selectionScreen');
+    const playScreen = document.getElementById('playScreen');
+    const ticketsContainer = document.getElementById('ticketsContainer');
+    const backBtn = document.getElementById('backBtn');
+    const newGameBtn = document.getElementById('newGameBtn');
+    const startBtn = document.getElementById('startBtn');
+    const setupError = document.getElementById('setupError');
+    const selectionCount = document.getElementById('selectionCount');
+    const ticketSelectGrid = document.getElementById('ticketSelectGrid');
+    const confirmSelectionBtn = document.getElementById('confirmSelectionBtn');
+    const ticketSearchInput = document.getElementById('ticketSearchInput');
+
+    // ===== Load tickets =====
+    try {
+      if (typeof TICKETS_DATA !== 'undefined' && Array.isArray(TICKETS_DATA) && TICKETS_DATA.length > 0) {
+        allTickets = TICKETS_DATA;
+      }
+    } catch(e) {}
+
+    // Load game title from settings
+    try {
+      const gameSettings = JSON.parse(localStorage.getItem('tambola_settings_v3'));
+      if (gameSettings && gameSettings.title) {
+        document.getElementById('pageTitle').textContent = gameSettings.title + ' — Player';
+      }
+    } catch(e) {}
+
+    // ===== Ticket Count Selector =====
+    document.querySelectorAll('.ticket-count-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.ticket-count-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        ticketCount = parseInt(btn.dataset.count);
+      });
+    });
+
+    // ===== Mode Selector =====
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        selectionMode = btn.dataset.mode;
+      });
+    });
+
+    // ===== Start Button =====
+    startBtn.addEventListener('click', () => {
+      if (allTickets.length === 0) {
+        setupError.textContent = '⚠️ No tickets loaded. Place finalTickets.js in the same folder.';
+        setupError.style.display = 'block';
+        return;
+      }
+      if (ticketCount > allTickets.length) {
+        setupError.textContent = `⚠️ Only ${allTickets.length} tickets available.`;
+        setupError.style.display = 'block';
+        return;
+      }
+      setupError.style.display = 'none';
+
+      if (selectionMode === 'random') {
+        pickRandomTickets();
+        showPlayScreen();
+      } else {
+        showSelectionScreen();
+      }
+    });
+
+    // ===== Random Pick =====
+    function pickRandomTickets() {
+      const shuffled = [...allTickets].sort(() => Math.random() - 0.5);
+      activeTickets = shuffled.slice(0, ticketCount);
+      selectedTicketIds = activeTickets.map(t => t.id);
+      initMarked();
+    }
+
+    // ===== Selection Screen =====
+    function showSelectionScreen() {
+      setupScreen.style.display = 'none';
+      playScreen.style.display = 'none';
+      selectionScreen.style.display = 'block';
+      backBtn.style.display = 'inline-block';
+      newGameBtn.style.display = 'none';
+      selectedTicketIds = [];
+      ticketSearchInput.value = '';
+      updateSelectionCount();
+      renderTicketSelectGrid();
+    }
+
+    function renderTicketSelectGrid(filter) {
+      ticketSelectGrid.innerHTML = '';
+      const query = (filter || '').trim().toLowerCase();
+      allTickets.forEach(ticket => {
+        if (query && !ticket.id.toLowerCase().includes(query)) return;
+        const item = document.createElement('div');
+        item.className = 'ticket-select-item';
+        if (selectedTicketIds.includes(ticket.id)) item.classList.add('selected');
+        if (selectedTicketIds.length >= ticketCount && !selectedTicketIds.includes(ticket.id)) item.classList.add('disabled');
+        item.textContent = ticket.id;
+        item.dataset.id = ticket.id;
+        item.addEventListener('click', () => toggleTicketSelection(ticket.id, item));
+        ticketSelectGrid.appendChild(item);
+      });
+    }
+
+    ticketSearchInput.addEventListener('input', () => {
+      renderTicketSelectGrid(ticketSearchInput.value);
+    });
+
+    function toggleTicketSelection(id, el) {
+      const idx = selectedTicketIds.indexOf(id);
+      if (idx >= 0) {
+        selectedTicketIds.splice(idx, 1);
+        el.classList.remove('selected');
+      } else {
+        if (selectedTicketIds.length >= ticketCount) return;
+        selectedTicketIds.push(id);
+        el.classList.add('selected');
+      }
+      updateSelectionCount();
+      updateSelectionDisabled();
+    }
+
+    function updateSelectionCount() {
+      selectionCount.textContent = `${selectedTicketIds.length} / ${ticketCount} selected`;
+      confirmSelectionBtn.disabled = selectedTicketIds.length !== ticketCount;
+    }
+
+    function updateSelectionDisabled() {
+      const atMax = selectedTicketIds.length >= ticketCount;
+      document.querySelectorAll('.ticket-select-item').forEach(item => {
+        if (atMax && !item.classList.contains('selected')) {
+          item.classList.add('disabled');
+        } else {
+          item.classList.remove('disabled');
+        }
+      });
+    }
+
+    confirmSelectionBtn.addEventListener('click', () => {
+      activeTickets = selectedTicketIds.map(id => allTickets.find(t => t.id === id)).filter(Boolean);
+      initMarked();
+      showPlayScreen();
+    });
+
+    // ===== Play Screen =====
+    function initMarked() {
+      markedNumbers = {};
+      activeTickets.forEach(t => {
+        markedNumbers[t.id] = new Set();
+      });
+    }
+
+    function showPlayScreen() {
+      setupScreen.style.display = 'none';
+      selectionScreen.style.display = 'none';
+      playScreen.style.display = 'block';
+      backBtn.style.display = 'none';
+      newGameBtn.style.display = 'inline-block';
+      renderTickets();
+      savePlayerState();
+    }
+
+    function renderTickets() {
+      ticketsContainer.innerHTML = '';
+      activeTickets.forEach((ticket, tIdx) => {
+        const card = document.createElement('div');
+        card.className = 'player-ticket';
+        card.id = `ticket-${ticket.id}`;
+
+        const marked = markedNumbers[ticket.id] || new Set();
+
+        // Header
+        let headerHtml = `<div class="player-ticket-header">
+          <span class="ticket-label">Ticket ${tIdx + 1}</span>
+          <span class="ticket-id">#${escapeHtml(ticket.id)}</span>
+        </div>`;
+
+        // Grid
+        let gridHtml = '<div class="player-ticket-grid">';
+        const rowTotals = [0, 0, 0];
+        const rowMarked = [0, 0, 0];
+        let totalNumbers = 0;
+        let totalMarked = 0;
+
+        for (let r = 0; r < 3; r++) {
+          for (let c = 0; c < 9; c++) {
+            const num = ticket.rows[r][c];
+            if (num > 0) {
+              rowTotals[r]++;
+              totalNumbers++;
+              const isMarked = marked.has(num);
+              if (isMarked) { rowMarked[r]++; totalMarked++; }
+              gridHtml += `<div class="player-cell has-number${isMarked ? ' marked' : ''}"
+                data-ticket="${ticket.id}" data-num="${num}">${num}</div>`;
+            } else {
+              gridHtml += `<div class="player-cell empty"></div>`;
+            }
+          }
+        }
+        gridHtml += '</div>';
+
+        // Row status
+        const rowLabels = ['R1', 'R2', 'R3'];
+        let statusHtml = '<div class="player-ticket-status">';
+        for (let r = 0; r < 3; r++) {
+          const done = rowMarked[r] === rowTotals[r];
+          statusHtml += `<div class="row-status-pill ${done ? 'complete' : ''}">
+            ${rowLabels[r]}: ${rowMarked[r]}/${rowTotals[r]} ${done ? '✅' : ''}
+          </div>`;
+        }
+        statusHtml += '</div>';
+
+        // Full house
+        const isFullHouse = totalMarked === totalNumbers;
+        statusHtml += `<div class="full-house-status ${isFullHouse ? 'complete' : 'incomplete'}">
+          ${isFullHouse ? '🎉 FULL HOUSE!' : `${totalMarked} / ${totalNumbers} marked`}
+        </div>`;
+
+        card.innerHTML = headerHtml + gridHtml + statusHtml;
+        ticketsContainer.appendChild(card);
+      });
+
+      // Attach cell click listeners
+      document.querySelectorAll('.player-cell.has-number').forEach(cell => {
+        cell.addEventListener('click', () => {
+          const ticketId = cell.dataset.ticket;
+          const num = parseInt(cell.dataset.num);
+          toggleMark(ticketId, num);
+        });
+      });
+    }
+
+    function toggleMark(ticketId, num) {
+      const set = markedNumbers[ticketId];
+      if (!set) return;
+      if (set.has(num)) {
+        if (!confirm(`Unmark number ${num}?`)) return;
+        set.delete(num);
+      } else {
+        set.add(num);
+      }
+      renderTickets();
+      savePlayerState();
+    }
+
+    function unmarkAll() {
+      if (!confirm('Unmark all numbers on all tickets?')) return;
+      activeTickets.forEach(t => {
+        markedNumbers[t.id] = new Set();
+      });
+      renderTickets();
+      savePlayerState();
+    }
+
+    // ===== Navigation =====
+    function goBack() {
+      if (playScreen.style.display === 'block') {
+        if (!confirm('Go back? Your marked numbers will be saved.')) return;
+      }
+      setupScreen.style.display = 'flex';
+      selectionScreen.style.display = 'none';
+      playScreen.style.display = 'none';
+      backBtn.style.display = 'none';
+      newGameBtn.style.display = 'none';
+    }
+
+    function startNewGame() {
+      if (!confirm('Start a new game? This will clear your current tickets and marked numbers.')) return;
+      localStorage.removeItem(PLAYER_KEY);
+      activeTickets = [];
+      markedNumbers = {};
+      selectedTicketIds = [];
+      setupScreen.style.display = 'flex';
+      selectionScreen.style.display = 'none';
+      playScreen.style.display = 'none';
+      backBtn.style.display = 'none';
+      newGameBtn.style.display = 'none';
+    }
+
+    // ===== Persistence =====
+    function savePlayerState() {
+      try {
+        const data = {
+          ticketIds: activeTickets.map(t => t.id),
+          marked: {}
+        };
+        activeTickets.forEach(t => {
+          data.marked[t.id] = Array.from(markedNumbers[t.id] || []);
+        });
+        localStorage.setItem(PLAYER_KEY, JSON.stringify(data));
+      } catch(e) {}
+    }
+
+    function loadPlayerState() {
+      try {
+        const raw = localStorage.getItem(PLAYER_KEY);
+        if (!raw) return false;
+        const data = JSON.parse(raw);
+        if (!data.ticketIds || !data.ticketIds.length) return false;
+        // Restore tickets
+        activeTickets = data.ticketIds
+          .map(id => allTickets.find(t => t.id === id))
+          .filter(Boolean);
+        if (activeTickets.length === 0) return false;
+        // Restore marked
+        markedNumbers = {};
+        activeTickets.forEach(t => {
+          const arr = data.marked[t.id] || [];
+          markedNumbers[t.id] = new Set(arr);
+        });
+        return true;
+      } catch(e) { return false; }
+    }
+
+    // ===== Utility =====
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // ===== Init =====
+    if (allTickets.length > 0 && loadPlayerState()) {
+      showPlayScreen();
+    }
+  </script>
+</body>
+</html>
